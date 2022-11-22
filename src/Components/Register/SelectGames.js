@@ -10,8 +10,11 @@ import overwatch from "../../Images/overwatch.png";
 import valorant from "../../Images/valorant.png";
 import cross from "../../Images/cross.svg";
 import RegisterApp from "./RegisterApp";
+import useWindowDimensions from "../../ScreenDimensions";
 
 function SelectGames() {
+  const { width, height } = useWindowDimensions();
+  const isMobile = width <= 1024;
   const gameImgList = [dota, lol, r6s, rocketLeague];
   const nextGameImgList = [csgo, cod, overwatch, valorant];
   const [selectedGames, setSelectedGames] = useState([]);
@@ -48,17 +51,41 @@ function SelectGames() {
       <NavigationBar />
       <div
         style={{
-          width: "1120px",
+          width: isMobile ? "90%" : "1120px",
           margin: "0 auto",
           paddingTop: "100px",
         }}
       >
         <div className="sub-title">Which games do you like to play?</div>
         <div className="sub-text">
-          Select all that you’d like to play
-          {selectedGames.length > 0
-            ? " ( " + selectedGames.length + " games selected )"
-            : ""}
+          {isMobile ? (
+            selectedGames.length === 0 ? (
+              "Don’t worry, you can change your selection later :)"
+            ) : (
+              <div className="games-pill-wrapper">
+                {selectedGames.map((elem) => {
+                  return (
+                    <div
+                      className="game-name-pill"
+                      onClick={() => {
+                        var temp = selectedGames;
+                        temp.splice(temp.indexOf(elem), 1);
+                        setSelectedGames([...temp]);
+                      }}
+                    >
+                      <img src={cross} />
+                      {getGameName(elem)}
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : "Select all that you’d like to play" + selectedGames.length >
+            0 ? (
+            " ( " + selectedGames.length + " games selected )"
+          ) : (
+            ""
+          )}
         </div>
         <div className="games-list-wrapper">
           {(showRegisterButton ? nextGameImgList : gameImgList).map(
@@ -92,29 +119,34 @@ function SelectGames() {
             <div
               className="transparent-button"
               onClick={() => setShowRegisterButton(false)}
+              style={isMobile ? { marginBottom: "12px" } : {}}
             >
               Go Back
             </div>
           ) : (
             ""
           )}
-          <div className="games-pill-wrapper">
-            {selectedGames.map((elem) => {
-              return (
-                <div
-                  className="game-name-pill"
-                  onClick={() => {
-                    var temp = selectedGames;
-                    temp.splice(temp.indexOf(elem), 1);
-                    setSelectedGames([...temp]);
-                  }}
-                >
-                  <img src={cross} />
-                  {getGameName(elem)}
-                </div>
-              );
-            })}
-          </div>
+          {isMobile ? (
+            ""
+          ) : (
+            <div className="games-pill-wrapper">
+              {selectedGames.map((elem) => {
+                return (
+                  <div
+                    className="game-name-pill"
+                    onClick={() => {
+                      var temp = selectedGames;
+                      temp.splice(temp.indexOf(elem), 1);
+                      setSelectedGames([...temp]);
+                    }}
+                  >
+                    <img src={cross} />
+                    {getGameName(elem)}
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div
             className={
               showRegisterButton ? "accent-button" : "transparent-button"

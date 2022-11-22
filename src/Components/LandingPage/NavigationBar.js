@@ -1,209 +1,101 @@
 import React, { useState } from "react";
-import { Redirect, useHistory } from "react-router";
-import logo from "../../Images/logo.png";
-import Dropdown from "react-bootstrap/Dropdown";
-import DropdownButton from "react-bootstrap/DropdownButton";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
+import { Dock } from "react-dock";
 import useWindowDimensions from "../../ScreenDimensions";
+import logo from "../../Images/logo.png";
 
-function NavigationBar() {
+function NavigationBar(props) {
   const { width, height } = useWindowDimensions();
-  const deltaWidth = 850;
-  const [colorChange, setColorchange] = useState(false);
-  const [redirect, setRedirect] = useState({
-    redirect: false,
-    path: "",
-    state: "",
-  });
-  const history = useHistory();
-  const changeNavbarColor = () => {
-    if (window.scrollY >= 80) {
-      setColorchange(true);
-    } else {
-      setColorchange(false);
-    }
-  };
-  window.addEventListener("scroll", changeNavbarColor);
+  const isMobile = width <= 1024;
+  const [isVisible, _setIsVisible] = useState(false);
 
-  const navLinksData = [
-    // {id: "link0", title: "Tournament structure",
-    //     linkPath: "/tournament-structure",
-    //     moreLinksData: ["Overview", "College Esports Champion", "Open Tournament"]},
-    // {id: "link1", title: "Rankings",
-    //     linkPath: "/rankings",
-    //     moreLinksData: ["Overall Rankings", "CS:GO Rankings", "Rocket League Rankings", "Valorant Rankings"]},
-    // {id: "link2", title: "Guidelines",
-    //     linkPath: "/guidelines",
-    //     moreLinksData: ["Code Of Conduct", "CS:GO Rules", "Rocket League Rules", "Valorant Rules"]},
-  ];
-
-  const [toggleLinks, setToggleLinks] = useState({
-    link0: false,
-    link1: false,
-    link2: false,
-  });
-
-  const toggleArrowOfLink = (idx) => {
-    setToggleLinks({
-      ...toggleLinks,
-      ["link" + idx]: !toggleLinks["link" + idx],
-    });
+  const setIsVisible = (val) => {
+    _setIsVisible(val);
   };
 
-  if (redirect.redirect) {
-    if (redirect.path !== window.location.pathname) {
-      return (
-        <Redirect
-          to={{
-            pathname: redirect.path,
-            state: redirect.state,
-          }}
-        />
-      );
-    }
-  }
-  const handleClick = () => {
-    if (window.scrollY < 80) {
-      if (
-        document
-          .getElementById("navbar-container")
-          .classList.contains("navbar-color")
-      ) {
-        setTimeout(() => {
-          document
-            .getElementById("navbar-container")
-            .classList.remove("navbar-color");
-        }, 300);
-      } else {
-        document
-          .getElementById("navbar-container")
-          .classList.add("navbar-color");
-      }
-    }
+  const landingPageSwitch = (url) => {
+    // window.history.pushState((url = url));
+    window.location.href = url;
   };
-  if (width < deltaWidth) {
+
+  const getNavigationBarLinks = () => {
     return (
-      <Navbar bg="none" expand="lg" variant="dark" onToggle={handleClick}>
-        <Container
-          className={
-            colorChange ? "mobile-navbar navbar-color" : "mobile-navbar"
-          }
-          id="navbar-container"
+      <>
+        <li
+          style={isMobile ? { display: "none" } : {}}
+          onClick={() => {
+            landingPageSwitch("/register");
+          }}
         >
-          <Navbar.Brand href="/">
-            <img style={{ width: "10px" }} src={logo} />
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="justify-content-around align-items-center vh-100 w-100 pb-5">
-              {navLinksData.map((navLink, idx) => {
-                return (
-                  <NavDropdown
-                    style={{
-                      alignItems: "center",
-                      textAlign: "center",
-                      marginTop: "24px",
-                    }}
-                    title={navLink.title}
-                    key={idx}
-                  >
-                    {navLink.moreLinksData.map((moreLink, key) => {
-                      return (
-                        <NavDropdown.Item
-                          style={{ color: "white" }}
-                          onClick={() =>
-                            setRedirect({
-                              redirect: true,
-                              path: navLink.linkPath,
-                              state: key + 1,
-                            })
-                          }
-                          key={key}
-                        >
-                          {moreLink}
-                        </NavDropdown.Item>
-                      );
-                    })}
-                  </NavDropdown>
-                );
-              })}
-              <Nav.Link
-                href="/register"
-                style={{
-                  marginTop: "auto",
-                  marginBottom: "24px",
-                }}
-              >
-                <div className="button-wrapper">
-                  <button>Participate</button>
-                </div>
-              </Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+          <div style={{ color: "#50FFCA" }}>
+            <span className="menu-options-title">Register Team</span>
+          </div>
+        </li>
+      </>
+    );
+  };
+
+  if (!isMobile) {
+    return (
+      <div className="top-bar-wrapper" id="front-page-top-bar">
+        <div className="top-bar-sub-container">
+          <div className="website-title" onClick={() => landingPageSwitch("/")}>
+            <img src={logo} />
+          </div>
+          <ul className="top-bar-links">{getNavigationBarLinks()}</ul>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <>
+        <Dock
+          position="right"
+          fluid={true}
+          isVisible={isVisible}
+          size={1}
+          zIndex={1}
+          dimStyle={{ background: "rgba(19, 20, 21, 0.9)" }}
+          dockStyle={{ background: "rgba(19, 20, 21, 0.8)" }}
+        >
+          <ul className="side-navbar-links">
+            {getNavigationBarLinks()}
+            <div
+              onClick={() => landingPageSwitch("/register")}
+              className="accent-button"
+              style={{
+                width: "-webkit-fill-available",
+                margin: "0 10px",
+                position: "fixed",
+                bottom: "24px",
+              }}
+            >
+              Let's Go
+            </div>
+          </ul>
+        </Dock>
+        <div className="top-bar-wrapper" id="front-page-top-bar">
+          <div className="website-title" onClick={() => landingPageSwitch("/")}>
+            <img src={logo} />
+          </div>
+          <div
+            className={
+              "bar-container menu-button" + (isVisible ? " change" : "")
+            }
+            style={{ color: "white", cursor: "pointer" }}
+            onClick={() => {
+              setIsVisible(!isVisible);
+            }}
+          >
+            <div className="bar1"></div>
+            <div className="bar2"></div>
+            <div className="bar3"></div>
+          </div>
+        </div>
+      </>
     );
   }
-  return (
-    <nav className="landing-page-navbar">
-      <ul className={colorChange ? "navbar navbar-color" : "navbar"}>
-        <li className="navbar-items" id="logo">
-          <img
-            onClick={() => history.push("/")}
-            style={{ width: "10px" }}
-            src={logo}
-          />
-        </li>
-        {navLinksData.map(({ title, linkPath, moreLinksData }, key) => {
-          return (
-            <li className="navbar-items">
-              <div onClick={() => toggleArrowOfLink(key)}>
-                <Dropdown className="nav-dropdown">
-                  <Dropdown.Toggle variant="none">
-                    {title}
-                    {/* <span className={
-                                        toggleLinks["link" + key] ? "arrow active" : "arrow"
-                                    }>
-                                        <span></span>
-                                        <span></span>
-                                    </span> */}
-                  </Dropdown.Toggle>
-
-                  <Dropdown.Menu variant="dark">
-                    {moreLinksData.map((moreLink, key) => (
-                      <Dropdown.Item
-                        onClick={() =>
-                          setRedirect({
-                            redirect: true,
-                            path: linkPath,
-                            state: key + 1,
-                          })
-                        }
-                      >
-                        {moreLink}
-                      </Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </div>
-            </li>
-          );
-        })}
-        <li
-          className="navbar-items"
-          onClick={() =>
-            setRedirect({
-              redirect: true,
-              path: "/register",
-            })
-          }
-        >
-          Register Team
-        </li>
-      </ul>
-    </nav>
-  );
 }
+
+NavigationBar.propTypes = {};
 
 export default NavigationBar;
