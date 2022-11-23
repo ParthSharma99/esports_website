@@ -54,8 +54,8 @@ function NavigationBar(props) {
           isVisible={isVisible}
           size={1}
           zIndex={1}
-          dimStyle={{ background: "rgba(19, 20, 21, 0.9)" }}
-          dockStyle={{ background: "rgba(19, 20, 21, 0.8)" }}
+          dimStyle={{ background: "rgba(0, 0, 0, 0.9)" }}
+          dockStyle={{ background: "rgba(0, 0, 0, 0.8)" }}
         >
           <ul className="side-navbar-links">
             {getNavigationBarLinks()}

@@ -51,8 +51,11 @@ export function Context({ children }) {
   };
 
   const submitForm = async (data) => {
-    delete data["attachedFileFRONT"];
-    delete data["attachedFileBACK"];
+    console.log(data);
+    try {
+      delete data["attachedFileFRONT"];
+      delete data["attachedFileBACK"];
+    } catch (error) {}
     let referralId = sessionStorage.getItem("referralId");
     if (referralId) {
       const referralIdDb = child(
@@ -68,9 +71,12 @@ export function Context({ children }) {
 
     sessionStorage.setItem("uniqueGamerId", "");
     sessionStorage.setItem("referralId", "");
+
+    setFormSubmitted(true);
   };
 
   const checkGamerTag = async (name) => {
+    setGamerTagAvailable(0);
     if (name === "") {
       setGamerTagAvailable(-1);
       return;

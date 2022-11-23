@@ -5,7 +5,7 @@ import useWindowDimensions from "../../ScreenDimensions";
 function MainWebSiteTemplate(props) {
   const { contentsIndex, active, setActive, pageContentList } = props;
   const { width, height } = useWindowDimensions();
-  const deltaWidth = 850;
+  const deltaWidth = 0;
   const sectionsRef = useRef([]);
   const [selectedHeading, setSelectedHeading] = useState(contentsIndex[1]);
 

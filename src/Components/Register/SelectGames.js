@@ -14,7 +14,7 @@ import useWindowDimensions from "../../ScreenDimensions";
 
 function SelectGames() {
   const { width, height } = useWindowDimensions();
-  const isMobile = width <= 1024;
+  const isMobile = width <= 1200;
   const gameImgList = [dota, lol, r6s, rocketLeague];
   const nextGameImgList = [csgo, cod, overwatch, valorant];
   const [selectedGames, setSelectedGames] = useState([]);
@@ -42,8 +42,16 @@ function SelectGames() {
     }
   };
 
+  const getSelectedGamesAsString = () => {
+    var ret = "/";
+    selectedGames.map((element) => {
+      ret += getGameName(element) + "/";
+    });
+    return ret;
+  };
+
   if (showRegisterForm) {
-    return <RegisterApp />;
+    return <RegisterApp selectedGames={getSelectedGamesAsString()} />;
   }
 
   return (
@@ -54,6 +62,7 @@ function SelectGames() {
           width: isMobile ? "90%" : "1120px",
           margin: "0 auto",
           paddingTop: "100px",
+          maxWidth: isMobile ? "400px" : "",
         }}
       >
         <div className="sub-title">Which games do you like to play?</div>

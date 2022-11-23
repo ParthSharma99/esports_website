@@ -1,28 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import MainWebSiteTemplate from "../Templates/MainWebSiteTemplate";
 import gamerCardSample from "../../Images/gamerCardSample.png";
-import gamerAvatarSample from "../../Images/gamerAvatarSample.png";
 import whatsappLogo from "../../Images/whatsappLogo.png";
 import copyButtonLogo from "../../Images/copyButtonLogo.svg";
-import facebookLinkLogo from "../../Images/facebookLinkLogo.png";
-import discordLinkLogo from "../../Images/discordLinkLogo.png";
-import messengerLogo from "../../Images/messengerLogo.png";
-import twitterLinkLogo from "../../Images/twitterLinkLogo.png";
-import mailLinkLogo from "../../Images/mailLinkLogo.png";
-import { Redirect, useHistory } from "react-router";
-import { backend_url } from "../../constants";
 import { useAuth } from "../../Context";
 import { v4 as uuidv4 } from "uuid";
 import useWindowDimensions from "../../ScreenDimensions";
-import {
-  EmailShareButton,
-  FacebookShareButton,
-  TwitterShareButton,
-  WhatsappShareButton,
-  FacebookMessengerShareButton,
-} from "react-share";
 
-function RegisterApp() {
+function RegisterApp(props) {
   const {
     checkGamerTag,
     gamerTagAvailable,
@@ -30,12 +15,14 @@ function RegisterApp() {
     uploadImages,
     formSubmitted,
   } = useAuth();
+  const { selectedGames } = props;
   const { width, height } = useWindowDimensions();
   const deltaWidth = 850;
   const [currentShareLink, setCurrentShareLink] = useState("");
   const [shareText, setShareText] = useState("");
 
   useEffect(() => {
+    setActive(1);
     let uid = sessionStorage.getItem("uniqueGamerId");
     if (uid) {
       setAllFieldValues({ ...allFieldValues, ["uniqueGamerId"]: uid });
@@ -47,17 +34,12 @@ function RegisterApp() {
   }, []);
 
   useEffect(() => {
+    console.log(formSubmitted);
     if (formSubmitted) {
       setCurrentShareLink(
-        window.location.origin + "referral/" + allFieldValues.uniqueGamerId
+        window.location.origin + "/referral/" + allFieldValues.uniqueGamerId
       );
-      if (width < deltaWidth) {
-        return (
-          <Redirect to={"/verification/" + allFieldValues.uniqueGamerId} />
-        );
-      } else {
-        setActive(4);
-      }
+      setActive(4);
     }
   }, [formSubmitted]);
 
@@ -80,19 +62,57 @@ function RegisterApp() {
       }
       setActive(2);
     }
+    changeStateOfBtns(true);
   }, [gamerTagAvailable]);
+
   const [allFieldValues, setAllFieldValues] = useState({
     uniqueGamerId: "XXX-XXX-XXX",
     uniqueGamerTag: "",
     fullName: "",
-    collegeName: "",
-    collegeEmail: "",
     personalEmail: "",
     phoneNumber: "",
-    attachedFileFRONT: "",
-    attachedFileBACK: "",
+    haveSquad: "",
+    selectedGames: selectedGames,
   });
-  console.log(allFieldValues);
+
+  const changeStateOfBtns = (show) => {
+    var btns = document.getElementsByClassName("btn");
+    for (let i = 0; i < btns.length; i++) {
+      if (show) btns[i].classList.remove("disabled-button");
+      else btns[i].classList.add("disabled-button");
+    }
+  };
+
+  const submitFormclicked = async (e) => {
+    e.target.disabled = true;
+    if (ifEmptyAllFields()) {
+      alert("Please fill all the fields");
+      changeStateOfBtns(true);
+      return;
+    } else await checkGamerTag(allFieldValues.uniqueGamerTag);
+
+    // if (
+    //   allFieldValues.attachedFileFRONT === "" ||
+    //   allFieldValues.attachedFileBACK == ""
+    // ) {
+    //   return;
+    // }
+    // await uploadImages(
+    //   allFieldValues.attachedFileFRONT,
+    //   allFieldValues.uniqueGamerId +
+    //     "__FRONT__" +
+    //     allFieldValues.attachedFileFRONT.name
+    // );
+
+    // await uploadImages(
+    //   allFieldValues.attachedFileBACK,
+    //   allFieldValues.uniqueGamerId +
+    //     "__BACK__" +
+    //     allFieldValues.attachedFileBACK.name
+    // );
+
+    submitForm(allFieldValues);
+  };
 
   const changeHandler = (e) => {
     setAllFieldValues({ ...allFieldValues, [e.target.name]: e.target.value });
@@ -100,9 +120,11 @@ function RegisterApp() {
 
   const ifEmptyAllFields = () => {
     let flag = false;
+    console.log(allFieldValues);
     for (let key in allFieldValues) {
       if (allFieldValues[key] === "") {
         flag = true;
+        break;
       }
     }
     return flag;
@@ -243,15 +265,14 @@ function RegisterApp() {
             </div>
           </div>
         </div>
-        <div className="next-form-button-wrapper">
-          <button
-            className="next-form-button"
-            onClick={() => {
-              checkGamerTag(allFieldValues.uniqueGamerTag);
-            }}
-          >
-            Enter Player Details
-          </button>
+        <div
+          className="accent-button btn"
+          onClick={() => {
+            checkGamerTag(allFieldValues.uniqueGamerTag);
+            changeStateOfBtns(false);
+          }}
+        >
+          Enter Player Details
         </div>
       </div>
     );
@@ -289,15 +310,25 @@ function RegisterApp() {
         )}
       </div>
       <div className="next-form-button-wrapper">
-        {width < deltaWidth ? (
-          <button className="back-form-button" onClick={() => setActive(1)}>
-            Back to ‘Gamer Tag’
-          </button>
-        ) : (
-          <button className="next-form-button" onClick={() => setActive(3)}>
-            Attach college photo ID
-          </button>
-        )}
+        <div
+          className="transparent-button btn"
+          onClick={() => {
+            setActive(1);
+            changeStateOfBtns(false);
+          }}
+        >
+          Back to ‘Gamer Tag’
+        </div>
+        <div
+          className="accent-button btn"
+          style={{ marginTop: "16px" }}
+          onClick={() => {
+            setActive(3);
+            changeStateOfBtns(false);
+          }}
+        >
+          Enter Player Details
+        </div>
       </div>
     </div>
   );
@@ -314,35 +345,8 @@ function RegisterApp() {
         </button>
         <button
           id="complete-form-button"
-          onClick={async () => {
-            if (ifEmptyAllFields()) {
-              alert("Please fill all the fields");
-              return;
-            } else await checkGamerTag(allFieldValues.uniqueGamerTag);
-            document.getElementById("complete-form-button").disabled = true;
-            if (
-              allFieldValues.attachedFileFRONT === "" ||
-              allFieldValues.attachedFileBACK == ""
-            ) {
-              return;
-            }
-            console.log(allFieldValues.attachedFileFRONT.name);
-
-            await uploadImages(
-              allFieldValues.attachedFileFRONT,
-              allFieldValues.uniqueGamerId +
-                "__FRONT__" +
-                allFieldValues.attachedFileFRONT.name
-            );
-
-            await uploadImages(
-              allFieldValues.attachedFileBACK,
-              allFieldValues.uniqueGamerId +
-                "__BACK__" +
-                allFieldValues.attachedFileBACK.name
-            );
-
-            submitForm(allFieldValues);
+          onClick={async (e) => {
+            submitFormclicked(e);
           }}
         >
           Complete
@@ -353,66 +357,107 @@ function RegisterApp() {
 
   const verificationContent = () => (
     <div className="register-form">
-      <div>
-        <div className="verification-status">
-          Status : <span>Pending</span>
-        </div>
-        <div className="verification-text-content">
-          <ul>
-            <li>Our team is verifying your details</li>
-            <li>Use this opportunity to create your player page</li>
-            <li>Create your esports squad </li>
-          </ul>
-          <div style={{ whiteSpace: "pre-line" }}>
+      <div
+        style={{ whiteSpace: "pre-wrap", width: "100% " }}
+        className="form-sub-text"
+      >
+        {
+          "We've recieved your early access pass request.\nWe will get in touch with you shortly."
+        }
+      </div>
+      <div className="next-form-button-wrapper">
+        <div className="referral-link-wrapper">
+          <div style={{ whiteSpace: "pre-wrap" }} className="form-sub-text">
             {
-              "Send your invite link to friends so you both can earn\nOasis Coins, which will give you exclusive access and\nearly access to features, events."
+              "Send your invite link to friends so we can prioritise\nyour squad during early access pass distribution"
             }
           </div>
-        </div>
-        <div className="referral-link-wrapper">
-          <span className="referral-link-box" onClick={() => copyToClipboard()}>
+          <span
+            style={{ marginTop: "24px" }}
+            className="referral-link-box"
+            onClick={() => copyToClipboard()}
+          >
             {currentShareLink.slice(0, 30) + "..."}
           </span>
           <img
             id="copy-button"
             src={copyButtonLogo}
+            style={{ marginTop: "25px" }}
             onClick={() => copyToClipboard()}
           />
         </div>
-        <div className="referral-site-wrapper">
-          <div
-            className="share-button"
-            onClick={() => referralHandler("whatsapp")}
-          >
-            <img src={whatsappLogo} />
-          </div>
-          <FacebookMessengerShareButton
-            url={shareText}
-            className="share-button"
-          >
-            <img src={messengerLogo} />
-          </FacebookMessengerShareButton>
-          <FacebookShareButton url={currentShareLink} className="share-button">
-            <img src={facebookLinkLogo} />
-          </FacebookShareButton>
-          <TwitterShareButton url={shareText} className="share-button">
-            <img src={twitterLinkLogo} />
-          </TwitterShareButton>
-          <div
-            className="share-button"
-            onClick={() => referralHandler("discord")}
-          >
-            <img src={discordLinkLogo} />
-          </div>
-          <EmailShareButton url={shareText} className="share-button">
-            <img src={mailLinkLogo} />
-          </EmailShareButton>
+        <div
+          className="accent-button"
+          style={{
+            marginTop: "24px",
+            height: "40px",
+            background: "#25D366",
+            color: "white",
+            width: "100%",
+            position: "relative",
+          }}
+          onClick={() => referralHandler("whatsapp")}
+        >
+          <img
+            src={whatsappLogo}
+            style={{ height: "40px", position: "absolute", left: "8px" }}
+          />
+          Share using whatsapp
         </div>
       </div>
+    </div>
+  );
+
+  const squadDetails = () => (
+    <div className="register-form">
+      <div
+        className="form-sub-text"
+        style={{ whiteSpace: "pre-wrap", width: "100% " }}
+      >
+        Do you have a squad you play with?
+      </div>
       <div className="next-form-button-wrapper">
-        <button className="next-form-button" onClick={() => setActive(4)}>
-          Player Page
-        </button>
+        <div
+          className="transparent-button btn"
+          onClick={() => {
+            setActive(2);
+            changeStateOfBtns(false);
+          }}
+        >
+          Back to 'Player Details'
+        </div>
+        <div
+          className="transparent-button btn"
+          style={{
+            borderColor: "#50FFCA",
+            color: "#50FFCA",
+            marginTop: "40px",
+          }}
+          onClick={async (e) => {
+            changeStateOfBtns(false);
+            setAllFieldValues({
+              ...allFieldValues,
+              haveSquad: "false",
+            });
+            setTimeout(() => submitFormclicked(e), 1000);
+          }}
+        >
+          I DO NOT have a squad
+        </div>
+        <div
+          className="accent-button btn"
+          style={{ marginTop: "16px" }}
+          onClick={async (e) => {
+            changeStateOfBtns(false);
+            setAllFieldValues({
+              ...allFieldValues,
+              haveSquad: "true",
+            });
+            setTimeout(() => submitFormclicked(e), 1000);
+          }}
+        >
+          I play with a squad
+        </div>
       </div>
     </div>
   );
@@ -426,19 +471,19 @@ function RegisterApp() {
       titleText: "Reserve your Unique Gamer Tag",
     },
     {
-      text: "Player Details",
+      text: "Player registration",
       title: false,
       link: "",
       titleText: "Player registration",
     },
-    { text: "Attach Files", title: false, link: "" },
-    { text: "Verification", title: false, link: "" },
+    { text: "Squad Details", title: false, link: "" },
+    { text: "Finished", title: false, link: "" },
   ];
 
   const pageContentList = [
     gamerTagContent,
     playerRegistrationContent,
-    attachFilesContent,
+    squadDetails,
     verificationContent,
   ];
 
@@ -450,6 +495,7 @@ function RegisterApp() {
       }
     }
     setActiveSection(section);
+    changeStateOfBtns(true);
   };
   return (
     <>
