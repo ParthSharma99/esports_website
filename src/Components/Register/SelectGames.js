@@ -115,7 +115,7 @@ function SelectGames() {
                       setSelectedGames([...temp]);
                     } else {
                       e.target.classList.add("selected-image");
-                      setSelectedGames([...selectedGames, i]);
+                      setSelectedGames([i, ...selectedGames]);
                     }
                   }}
                 />
@@ -168,6 +168,8 @@ function SelectGames() {
           >
             {showRegisterButton
               ? "Request Early Passes"
+              : selectedGames.length > 0
+              ? "Select these games"
               : "None of  these games"}
           </div>
         </div>

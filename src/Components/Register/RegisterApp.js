@@ -327,7 +327,7 @@ function RegisterApp(props) {
             changeStateOfBtns(false);
           }}
         >
-          Enter Player Details
+          Enter Squad Details
         </div>
       </div>
     </div>
